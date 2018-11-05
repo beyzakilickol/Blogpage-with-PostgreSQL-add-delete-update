@@ -1,0 +1,21 @@
+<html>
+<head>
+  <link rel="stylesheet" type="text/css" href="/site.css" />
+</head>
+<body>
+
+
+
+  <form action="/update_post" method="POST">
+    <br />
+    <label>Enter your username:<input type="text" name="username" value="{{result.username}}"/> </label><br /><br />
+  <label>Enter title of your post:  <input type="text" name="title"  value="{{result.title}}"/></label><br /><br />
+  <label>Type your content here: <textarea type="text"  name="description" >{{result.description}}</textarea
+  > </label> <br /><br />
+
+    <input type="hidden" name="postId" value="{{result.postid}}" />
+    <input type="submit" value="Update post" />
+  </form>
+
+</body>
+</html>

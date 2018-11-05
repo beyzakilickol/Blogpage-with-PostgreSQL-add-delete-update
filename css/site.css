@@ -1,0 +1,30 @@
+label {display:block;}
+textarea {
+display:block;
+width:90%;
+height: 40%;
+}
+footer{
+  text-transform: capitalize;
+}
+#post-container{
+  margin-left:7%;
+  margin-right:7%;
+}
+.card{
+  margin-bottom: 30px;
+}
+#title{
+  text-align: center;
+}
+#remove-button{
+  width:10%;
+  align-self: flex-end;
+}
+#addPostButton{
+  margin-left: 7%;
+}
+#update-button{
+  width:10%;
+  align-self: flex-end;
+}
