@@ -10,6 +10,18 @@
 </head>
 <body>
 <h3 id="title">POSTS</h3>
+<div id="loginDiv">
+  <li class="nav-item dropdown">
+    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+       {{username}} Profile
+    </a>
+    <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
+      <a class="dropdown-item" href="/login">Login</a>
+      <a class="dropdown-item" href="/register">Register</a>
+      <a class="dropdown-item" href="/logout">Log Out</a>
+    </div>
+  </li>
+</div>
   <div id="post-container">
 {{#posts}}
   <div class="card">

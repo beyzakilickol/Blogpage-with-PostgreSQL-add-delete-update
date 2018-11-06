@@ -2,6 +2,7 @@ const express = require('express')
 const mustacheExpress = require('mustache-express')
 const bodyParser = require('body-parser')
 const app = express()
+var session = require('express-session')
 // import the pg-promise library which is used to connect and execute SQL on a postgres database
 const pgp = require('pg-promise')()
 // connection string which is used to specify the location of the database
@@ -16,11 +17,30 @@ app.use(express.static('css'))
 app.engine('mustache',mustacheExpress())
 app.set('views','./views')
 app.set('view engine','mustache')
-
-app.listen(3000,function(req,res){
+app.use(session({
+  secret: 'cat',
+  resave: false,
+  saveUninitialized: false
+}))
+app.listen(3011,function(req,res){
   console.log("Server has started...")
 })
 //------------------------------------------------------------
+//------------------------Middleware------------------------------------
+// let authenticateLogin = function(req,res,next) {
+//
+//   // check if the user is authenticated
+//   if(req.session.username) {
+//     next()
+//   } else {
+//     res.redirect("/")
+//   }
+//
+// }
+// app.all("/user/*",authenticateLogin,function(req,res,next){
+//     next()
+// })
+//-----------------------------------------------------------
 app.get('/comment/:postid',function(req,res){
   let postId = req.params.postid
 
@@ -62,8 +82,11 @@ if(existingPost ==null){
 
 
 })
-
-res.render('index',{posts:posts})
+if(req.session.username){
+res.render('index',{posts:posts,username : req.session.username})
+} else {
+  res.render('index',{posts:posts})
+}
   }).catch(function(error){
     console.log(error)
   })
@@ -119,4 +142,45 @@ app.post("/update_post",function(req,res){
   }).catch(function(error){
     console.log(error)
   })
+})
+//----------user authentication-----------
+app.get('/login', function(req,res){
+  res.render('login')
+})
+app.get('/register',function(req,res){
+  res.render('register')
+})
+app.post('/add_user_db',function(req,res){
+  let username = req.body.username
+  let email = req.body.email
+  let password = req.body.password
+  db.none('INSERT INTO users(username,password,email) VALUES($1,$2,$3)',[username,password,email]).then(function(){
+    console.log("User is registered...")
+    res.redirect('/login')
+  }).catch(function(error){
+    console.log(error)
+  })
+})
+app.post('/login',function(req,res){
+  let username = req.body.username
+  let password = req.body.password
+  db.one('SELECT username,password FROM users WHERE username =$1 and password = $2',[username,password]).then(function(result){
+    if(result != null){
+      req.session.username = result.username
+      res.redirect('/')
+    } else {
+      res.redirect('/register')
+    }
+  }).catch(function(error){
+    console.log(error)
+  })
+
+})
+app.get('/logout',function(req,res){
+  if(req.session.username){
+    req.session.destroy()
+    res.redirect('/')
+  } else {
+    res.redirect('/login')
+  }
 })
