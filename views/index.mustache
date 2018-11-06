@@ -25,10 +25,22 @@
     </div>
     <form action="/remove_post" method="POST">
       <input type="hidden" name="postId" value="{{postid}}"/>
+      <h4>Comments</h4>
+      <ul>
+  {{#comments}}
+        <li>
+          {{body}} <br />
+          {{commentposteddate}}
+        </li>
+        {{/comments}}
+      </ul>
      <input type="submit" id="remove-button" value="Remove" />
     </form>
     <a href="/update_post/{{postid}}"><button id="update-button">Update post</button></a>
+<a href="/comment/{{postid}}"><button>COMMENT</button></a>
   </div>
+
+
 {{/posts}}
 
 </div>

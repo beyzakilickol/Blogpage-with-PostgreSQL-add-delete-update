@@ -8,9 +8,11 @@ const pgp = require('pg-promise')()
 const connectionString = "postgres://localhost:5432/blogdb"
 // creating a new database object which will allow us to interact with the database
 const db = pgp(connectionString)
-
+const POST = require('./models/post')
+const COMMENT = require('./models/comments')
 app.use(bodyParser.urlencoded({ extended: false }))
 app.use(express.static('css'))
+
 app.engine('mustache',mustacheExpress())
 app.set('views','./views')
 app.set('view engine','mustache')
@@ -19,15 +21,56 @@ app.listen(3000,function(req,res){
   console.log("Server has started...")
 })
 //------------------------------------------------------------
-app.get('/',function(req,res){
-  db.any('SELECT postid,username,posteddate,title,description from userposts').then(function(result){
-    res.render('index',{posts:result})
+app.get('/comment/:postid',function(req,res){
+  let postId = req.params.postid
 
+  res.render("add_comment",{postid:postId})
+})
+app.post('/comment/:postid', function(req,res){
+  let postId = req.params.postid
+  let commentBody = req.body.commentBody
+  let commentPostDate = new Date().toLocaleString()
+  db.none('INSERT INTO comments(commentposteddate,body,postid) VALUES($1,$2,$3)',[commentPostDate,commentBody,postId]).then(function(){
+   res.redirect('/')
   }).catch(function(error){
     console.log(error)
   })
 
 })
+let posts =[]
+app.get('/',function(req,res){
+
+  posts = []
+
+  db.any('SELECT u.postid,u.username,u.posteddate,u.title,u.description,c.commentposteddate,c.body,c.commentid from userposts u LEFT JOIN comments c on u.postid = c.postid ').then(function(result){
+    result.forEach(function(item){
+      let existingPost = posts.find(function(post){
+        return post.postid == item.postid
+      })
+
+if(existingPost ==null){
+
+     let post = new POST(item.postid,item.username,item.posteddate,item.title,item.description)
+     let comment = new COMMENT(item.commentid,item.commentposteddate,item.body)
+     post.comments.push(comment)
+     posts.push(post)
+} else{
+
+  let comment = new COMMENT(item.commentid,item.commentposteddate,item.body)
+  existingPost.comments.push(comment)
+}
+
+
+})
+
+res.render('index',{posts:posts})
+  }).catch(function(error){
+    console.log(error)
+  })
+  console.log(posts)
+
+})
+
 app.get('/add_post', function(req,res){
   res.render('add_post')
 })
@@ -46,8 +89,11 @@ db.none('INSERT INTO userposts(username,postedDate,title,description) VALUES($1,
 })
 app.post("/remove_post", function(req,res){
   let postId = req.body.postId
-  db.none('DELETE FROM userposts WHERE postid=$1;',[postId]).then(function(){
-    res.redirect('/')
+    db.none('DELETE FROM comments WHERE postid=$1;',[postId]).then(function(){
+      db.none('DELETE FROM userposts WHERE postid=$1;',[postId]).then(function(){
+        res.redirect('/')
+    })
+
   }).catch(function(error){
     res.send(error)
   })
